@@ -26,7 +26,7 @@ public class RabbitConfig {
         return new TopicExchange(EXCHANGE_NAME);    }
     @Bean
     Queue queue() {
-        return new Queue(QUEUE_NAME);    }
+        return new Queue(QUEUE_NAME);    } // durable 옵션을 주지 않으면
 
     //Exchange와 queue 바인딩
     @Bean

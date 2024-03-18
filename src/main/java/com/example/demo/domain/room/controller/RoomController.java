@@ -46,9 +46,9 @@ public class RoomController {
     }
 
     //게임 시작 & 53장 카드 배분 & 시작 플레이어 정하기
-    @PostMapping("/start")
-    public ResponseEntity<?> start(HttpServletRequest request) {
-        return roomService.start(request.getParameter("roomId"));
+    @PostMapping("/start/{roomId}")
+    public ResponseEntity<?> start(@PathVariable String roomId) {
+        return roomService.start(roomId);
     }
 
     //방 나가기(사람이 없을시 방 폭파)(방장 넘기기 랜덤)

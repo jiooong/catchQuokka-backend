@@ -102,9 +102,9 @@ public class RoomService {
             if (3 > room.getHeadCount() || 6 < room.getHeadCount()) {
                 return new ResponseEntity(HttpStatusCode.valueOf(400)).badRequest().body("게임을 시작하기 위한 인원은 3~6명입니다.");
             }
-            //시작시 카드 배분으로 넘겨야되는데 리다이렉트로 연결해줘야되나? 프론트가 하는걸까?
-
-            //시작시 선이 누군지 정할건데 저장을 해줘야될까? 아니면 start메서드 안에 넣는게 맞나? roommanager가 선임
+            //시작시 카드 배분으로 넘겨야함
+            //순서는 프론트에서 저장하고 있도록
+            // 준비 다되면 방장이 시작할 수 있도록
             int random= (int) (Math.random() * room.getHeadCount());
             List<User> users = userRepository.findUsersByRoomRoomId(roomId);
 

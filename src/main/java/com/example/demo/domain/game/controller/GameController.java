@@ -5,9 +5,11 @@ import com.example.demo.domain.card.entity.Card;
 import com.example.demo.domain.card.repository.CardRepository;
 import com.example.demo.domain.card.service.CardService;
 import com.example.demo.domain.room.dto.GameMessageDto;
+import com.example.demo.domain.room.dto.UnReadyUserDto;
 import com.example.demo.domain.room.entity.Room;
 import com.example.demo.domain.room.repository.RoomRepository;
 import com.example.demo.domain.room.service.RoomService;
+import com.example.demo.domain.user.dto.UserSimpleDto;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,6 +19,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -33,20 +36,21 @@ public class GameController {
     //        private final SimpMessageSendingOperations messagingTemplate;
 
     @MessageMapping("game.{roomId}")
-    public void gameMessageProxy(@DestinationVariable("roomId") Long roomId, @Payload GameMessageDto message) throws JsonProcessingException {
+    public void gameMessageProxy(@DestinationVariable("roomId") String roomId, @Payload GameMessageDto message) throws JsonProcessingException {
         System.out.println("여기에 들어오나 메시지매핑 메서드");
+
+        //방장만 시작가능하면 방장 제외모두 ready 상태
         if (GameMessageDto.MessageType.START.equals(message.getType())) {
             System.out.println("여기에 들어오나" + message.getType());
             gameStarter(roomId, message);
         }
         if (GameMessageDto.MessageType.READY.equals(message.getType())) {
             System.out.println("여기에 들어오나" + message.getType());
-            gameReady(message);
+            gameReady(roomId, message);
         }
-
         if (GameMessageDto.MessageType.ENDGAME.equals(message.getType())) {
             System.out.println("여기에 들어오나" + message.getType());
-            gameEnd(message);
+            gameEnd(roomId,message);
         }
         if (GameMessageDto.MessageType.CREATE.equals(message.getType())) {
             System.out.println("여기에 들어오나" + message.getType());
@@ -54,17 +58,17 @@ public class GameController {
         }
         if (GameMessageDto.MessageType.JOIN.equals(message.getType())) {
             System.out.println("여기에 들어오나" + message.getType());
-            roomJoin(message);
+            roomJoin(roomId,message);
         }
+        // 게임중간에 탈주 -> 게임 자체가 끝난다
         if (GameMessageDto.MessageType.LEAVE.equals(message.getType())) {
             System.out.println("여기에 들어오나" + message.getType());
-            roomLeave(message);
+            roomLeave(roomId,message);
         }
         if (GameMessageDto.MessageType.MATCHING.equals(message.getType())) {
             System.out.println("여기에 들어오나" + message.getType());
             roomMatching(message);
         }
-
     }
 
     @MessageMapping("/card/{roomId}")
@@ -93,27 +97,28 @@ public class GameController {
         }
     }
 
-    public void gameStarter(Long roomId, GameMessageDto message) throws JsonProcessingException {
-        System.out.println("여기에 들어오나 게임스타터");
-        roomService.start(message.getRoomId());
-        Room room = roomRepository.findByRoomId(message.getRoomId());
-//        String messageContent = jsonStringBuilder.gameStarter(game);
+    public Room findRoom(String roomId){
+        Room room = roomRepository.findByRoomId(roomId);
+        if(!StringUtils.hasText(roomId)){
+            throw new NullPointerException("해당하는 방이 존재하지 않습니다.");
+        }else{
+            return room;
+        }
+    }
+    public void gameStarter(String roomId, GameMessageDto message) throws JsonProcessingException {
+        System.out.println("Game Start");
+        Room room = findRoom(roomId);
+        roomService.start(room.getRoomId());
         GameMessageDto gameMessage = new GameMessageDto();
         gameMessage.setRoomId(message.getRoomId());
         gameMessage.setSender(message.getSender());
         gameMessage.setType(GameMessageDto.MessageType.START);
-        gameMessage.setContent("방에 입장하였습니다");
-        rabbitTemplate.convertAndSend("game.exchange", "start.room." + roomId, message);
+        gameMessage.setContent("게임을 시작하겠습니다");
+        rabbitTemplate.convertAndSend("game.exchange", "start.room." + roomId, gameMessage);
+    }
 
-//        messagingTemplate.convertAndSend("/sub/game/" + message.getRoomId(), gameMessage);
-    }   //주석된 부분은 알맞게 수정해주세요.
-
-    //전원 준비완료한지 확인 후 게임시작 버튼 활성화
-    private void gameReady(GameMessageDto message) {
-        System.out.println("여기에 들어오나 게임레디");
-        message.getSender();
-        String roomId = message.getRoomId();
-        Room room = roomRepository.findByRoomId(roomId);
+    // ready 안한 유저 이름만 알려주기!!
+    public List<User> countPeople(String roomId, Room room){
         List<User> users = userRepository.findUsersByRoomRoomId(roomId);
 
         Long checkReady = 0L;
@@ -122,16 +127,33 @@ public class GameController {
                 checkReady++;
             }
         }
-        if (!(checkReady == room.getHeadCount())) {
-            return; //에러로 빼?
+//        if (checkReady == room.getHeadCount()) {
+//            return "start";
+//        }
+        List<User> notReadyUsers = userRepository.findUsersByRoomRoomIdAndReadyFalse(roomId);
+        return notReadyUsers;
+    }
+    // 준비단계
+    private void gameReady(String roomId, GameMessageDto message) {
+        System.out.println("Game Ready");
+        message.getSender();
+        Room room = findRoom(roomId);
+        List<User> notReadyUsers = countPeople(room.getRoomId(), room);
+        List<UserSimpleDto> userSimpleDtoList = new ArrayList<>();
+        for(User i : notReadyUsers){
+            UserSimpleDto userSimpleDto = UserSimpleDto.builder()
+                    .userId(i.getUserId())
+                    .email(i.getEmail())
+                    .name(i.getName())
+                    .build();
+            userSimpleDtoList.add(userSimpleDto);
         }
-//        String messageContent = jsonStringBuilder.gameStarter(game);
-        GameMessageDto gameMessage = new GameMessageDto();
-        gameMessage.setRoomId(message.getRoomId());
-        gameMessage.setSender(message.getSender());
-        gameMessage.setType(GameMessageDto.MessageType.READY);
-//        gameMessage.setContent(messageContent);
-//        messagingTemplate.convertAndSend("/sub/game/" + message.getRoomId(), gameMessage);
+        UnReadyUserDto unReadyUserDto = UnReadyUserDto.builder()
+                .roomId(room.getRoomId())
+                .userSimpleDtos(userSimpleDtoList)
+                .type(GameMessageDto.MessageType.READY).build();
+
+        rabbitTemplate.convertAndSend("game.exchange", "ready.room." + roomId, unReadyUserDto);
     }
 
     //필요하나?
@@ -154,10 +176,9 @@ public class GameController {
     }
 
     //경험치 추가 안했음
-    private void gameEnd(GameMessageDto message) {
+    private void gameEnd(String roomId, GameMessageDto message) {
         System.out.println("여기에 들어오나 게임 끝");
-        String roomId = message.getRoomId();
-        Room room = roomRepository.findByRoomId(roomId);
+        Room room = findRoom(roomId);
         List<User> users = userRepository.findUsersByRoomRoomId(message.getRoomId());
         Long count = 0L;
         for (User u : users) {
@@ -198,9 +219,9 @@ public class GameController {
 //        messagingTemplate.convertAndSend("/sub/game/" + message.getRoomId(), gameMessage);
     }
 
-    private void roomJoin(GameMessageDto message) {
+    private void roomJoin(String roomId, GameMessageDto message) {
         System.out.println("여기에 들어오나 방 입장");
-        Room room = roomRepository.findByRoomId(message.getRoomId());
+        Room room = findRoom(roomId);
         User user = userRepository.findByUserId(message.getSender());
 
         user.joinUser(room);
@@ -218,11 +239,10 @@ public class GameController {
 //        messagingTemplate.convertAndSend("/sub/game/" + message.getRoomId(), gameMessage);
     }
 
-    private void roomLeave(GameMessageDto message) {
+    private void roomLeave(String roomId, GameMessageDto message) {
         System.out.println("여기에 들어오나 방 떠나기");
-        String roomId = message.getRoomId();
         User user = userRepository.findByUserId(message.getSender());
-        Room room = roomRepository.findByRoomId(roomId);
+        Room room = findRoom(roomId);
 
         room.leaveRoom();
         if (room.getHeadCount() == 0) {
