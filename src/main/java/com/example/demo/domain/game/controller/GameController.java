@@ -36,26 +36,22 @@ public class GameController {
     //        private final SimpMessageSendingOperations messagingTemplate;
 
     @MessageMapping("game.{roomId}")
-    public void gameMessageProxy(@DestinationVariable("roomId") String roomId, @Payload GameMessageDto message) throws JsonProcessingException {
+    public void gameMessageProxy(@DestinationVariable("roomId") String roomId, @Payload GameMessageDto message, java.security.Principal principal) throws JsonProcessingException {
         System.out.println("여기에 들어오나 메시지매핑 메서드");
 
         //방장만 시작가능하면 방장 제외모두 ready 상태
         if (GameMessageDto.MessageType.START.equals(message.getType())) {
-            System.out.println("여기에 들어오나" + message.getType());
+            System.out.println("게임 시작" + message.getType());
             gameStarter(roomId, message);
         }
         if (GameMessageDto.MessageType.READY.equals(message.getType())) {
-            System.out.println("여기에 들어오나" + message.getType());
+            System.out.println("게임 대기" + message.getType());
             gameReady(roomId, message);
         }
         if (GameMessageDto.MessageType.ENDGAME.equals(message.getType())) {
-            System.out.println("여기에 들어오나" + message.getType());
+            System.out.println("여기에 들어오나" + message.getType()); // 게임 종료 후 남은 사람 1명 반환해줘야 하는건지
             gameEnd(roomId,message);
-        }
-        if (GameMessageDto.MessageType.CREATE.equals(message.getType())) {
-            System.out.println("여기에 들어오나" + message.getType());
-            roomCreate(message);
-        }
+        } // 방생성은 필요없을거 같아서 지움
         if (GameMessageDto.MessageType.JOIN.equals(message.getType())) {
             System.out.println("여기에 들어오나" + message.getType());
             roomJoin(roomId,message);
@@ -175,9 +171,9 @@ public class GameController {
 //        messagingTemplate.convertAndSend("/sub/game/" + message.getRoomId(), gameMessage);
     }
 
-    //경험치 추가 안했음
+    //경험치 1게임당 이기면 10점 지면 5점씩 증가한다.
     private void gameEnd(String roomId, GameMessageDto message) {
-        System.out.println("여기에 들어오나 게임 끝");
+        System.out.println("게임 종료");
         Room room = findRoom(roomId);
         List<User> users = userRepository.findUsersByRoomRoomId(message.getRoomId());
         Long count = 0L;
@@ -195,26 +191,6 @@ public class GameController {
         gameMessage.setRoomId(message.getRoomId());
         gameMessage.setSender(message.getSender());
         gameMessage.setType(GameMessageDto.MessageType.ENDGAME);
-//        gameMessage.setContent(messageContent);
-//        messagingTemplate.convertAndSend("/sub/game/" + message.getRoomId(), gameMessage);
-    }
-
-    //안쓸거 같은데
-    private void roomCreate(GameMessageDto message) {
-        System.out.println("여기에 들어오나 방 생성");
-        User user = userRepository.findByUserId(message.getSender());
-        String uuid = UUID.randomUUID().toString();
-        Room room = new Room(uuid, user.getUserId(), false);
-        roomRepository.save(room);
-
-        user.joinUser(room);
-        userRepository.save(user);
-
-//        String messageContent = jsonStringBuilder.gameStarter(game);
-        GameMessageDto gameMessage = new GameMessageDto();
-        gameMessage.setRoomId(message.getRoomId());
-        gameMessage.setSender(message.getSender());
-        gameMessage.setType(GameMessageDto.MessageType.CREATE);
 //        gameMessage.setContent(messageContent);
 //        messagingTemplate.convertAndSend("/sub/game/" + message.getRoomId(), gameMessage);
     }

@@ -1,6 +1,7 @@
 package com.example.demo.global.config;
 
 import com.example.demo.domain.room.handler.MyTextHandler;
+import com.example.demo.global.stomp.handler.MyStompSubProtocolErrorHandler;
 import com.example.demo.global.stomp.handler.StompHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler;
 
 @Configuration
 @RequiredArgsConstructor
@@ -18,6 +20,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final StompHandler stompHandler;
+    private final MyStompSubProtocolErrorHandler stompSubProtocolErrorHandler;
+
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -35,6 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 //            .withSockJS() //버전 낮은 브라우저에서도 적용 가능()
                             //구독자가 존재하지 않을 경우(Invalid SockJS path - required to have 3 path segments)
         ;
+        registry.setErrorHandler(stompSubProtocolErrorHandler);
     }
 
     @Override

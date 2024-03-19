@@ -121,17 +121,13 @@ public class RoomService {
             Room room = roomRepository.findByRoomId(roomId);
             if (room.getHeadCount() == 1) {
                 roomRepository.deleteRoomByRoomId(roomId);
-
                 return null;
             }
             user.leave();
-            
             int random= (int) (Math.random() * room.getHeadCount());
             List<User> users = userRepository.findUsersByRoomRoomId(roomId);
-
             String newManager = users.get(random).getUserId();
             room.changeManager(newManager);
-
             roomRepository.save(room);
             userRepository.save(user);
 

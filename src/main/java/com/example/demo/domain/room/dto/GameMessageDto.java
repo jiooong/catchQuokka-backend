@@ -13,7 +13,7 @@ public class GameMessageDto {
 
     public enum MessageType{
         ENTER, TALK, TURN ,
-        CREATE, JOIN, LEAVE, MATCHING,       //talk = 음성
+        CREATE, JOIN, LEAVE, MATCHING,EXIT,       //talk = 음성
         READY, START, ENDGAME
     }
 

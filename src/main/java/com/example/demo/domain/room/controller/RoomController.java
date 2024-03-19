@@ -57,4 +57,6 @@ public class RoomController {
                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return roomService.leave(roomId, userDetails.getUser());
     }
+
+
 }

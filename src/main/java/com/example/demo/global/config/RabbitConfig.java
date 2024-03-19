@@ -13,15 +13,15 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
-@EnableRabbit
-public class RabbitConfig {
-    // 사전작업에서 정한 exchange, queue, routing 등의 정보를 토대로 bean 생성
-    private static final String EXCHANGE_NAME = "game.exchange";
-    private static final String QUEUE_NAME = "game.queue";
-    private static final String ROUTING_KEY = "*.room.*";
+    @Configuration
+    @EnableRabbit
+    public class RabbitConfig {
+        // 사전작업에서 정한 exchange, queue, routing 등의 정보를 토대로 bean 생성
+        private static final String EXCHANGE_NAME = "game.exchange";
+        private static final String QUEUE_NAME = "game.queue";
+        private static final String ROUTING_KEY = "*.room.*";
 
-    @Bean
+        @Bean
     TopicExchange exchange() {
         return new TopicExchange(EXCHANGE_NAME);    }
     @Bean
