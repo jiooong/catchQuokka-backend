@@ -216,7 +216,7 @@ public class GameController {
     }
 
     private void roomLeave(String roomId, GameMessageDto message) {
-        System.out.println("여기에 들어오나 방 떠나기");
+        System.out.println("중간에 탈주하는 인원이 있는 경우 게임을 종료");
         User user = userRepository.findByUserId(message.getSender());
         Room room = findRoom(roomId);
 

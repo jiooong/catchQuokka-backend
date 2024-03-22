@@ -23,8 +23,11 @@ public class StompHandler implements ChannelInterceptor {
       log.info("CONNECT");
     }else if(StompCommand.SUBSCRIBE.equals(accessor.getCommand())){
       log.info("SUBSCRIBE");
-    }else if(StompCommand.DISCONNECT.equals(accessor.getCommand())){
+    }else if(StompCommand.DISCONNECT.equals(accessor.getCommand())){ // 연결 종료
       log.info("DISCONNECT");
+      // 토큰으로 사용자가 누군지 확인하기
+      // 방 나갔다 !
+
     }
     return message;
   }

@@ -116,7 +116,7 @@ public class RoomService {
         }
     }
 
-    public ResponseEntity<?> leave(String roomId, User user) { //떠나면 방인수 줄이고 해당인원 없애는거 생각해야되는듯 나중에 체크
+    public ResponseEntity<?> exit(String roomId, User user) { //떠나면 방인수 줄이고 해당인원 없애는거 생각해야되는듯 나중에 체크
         try {
             Room room = roomRepository.findByRoomId(roomId);
             if (room.getHeadCount() == 1) {
