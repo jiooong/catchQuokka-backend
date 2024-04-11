@@ -12,7 +12,7 @@ import lombok.Setter;
 public class CardMessageDto {
 
     public enum MessageType {
-        CHECK, DISTINCT, PICK, SHUFFLE, ENDTURN
+        CHECK, DISTINCT, PICK, SHUFFLE, ENDTURN, DEAL
     }
 
     private String roomId;
@@ -20,6 +20,7 @@ public class CardMessageDto {
     private String content;
     private MessageType type;
 
-
-
+    //다음 사람 정보
+    private String NextUser;
+    private Integer nextCardNum;
 }

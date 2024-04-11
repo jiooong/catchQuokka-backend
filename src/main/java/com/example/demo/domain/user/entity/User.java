@@ -45,6 +45,7 @@ public class User {
     private boolean done;
 
     //게임중인지도 판별해서 넣어줄건가요?
+    //준비중인거까진 필요한거 같은데 게임이 끝났을때 done값도 필요한가???
 
 //    @OneToMany
 //    @JoinColumn(name = "card_id")
@@ -69,7 +70,7 @@ public class User {
     }
 
     public void setReady() {
-        this.ready = true;
+        this.ready = !(this.ready);
     }
 
     public void setDone() {

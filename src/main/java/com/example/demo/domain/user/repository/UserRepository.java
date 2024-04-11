@@ -18,4 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findUsersByRoomRoomId(String roomId);
 
     List<User> findUsersByRoomRoomIdAndReadyFalse(String roomId);
+
+    List<String> findUserIdsByRoomRoomId(String roomId);
+
 }

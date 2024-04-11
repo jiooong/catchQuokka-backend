@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 import static lombok.AccessLevel.PROTECTED;
 
 @Entity
@@ -19,10 +21,20 @@ public class Card {
 //    @Column(name = "suit")
 //    private String suit;
 
+    @ElementCollection
     @Column(name = "card_num")
-    private Integer cardNum;
+    private List<Integer> cardNum;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    public Card(List<Integer> cards, User user) {
+        this.cardNum = cards;
+        this.user = user;
+    }
+
+    public void addCard(List<Integer> cards) {
+        this.cardNum = cards;
+    }
 }

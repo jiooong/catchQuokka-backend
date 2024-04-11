@@ -1,5 +1,7 @@
 package com.example.demo.domain.card.controller;
 
+import com.example.demo.domain.card.dto.CardsResponseDto;
+import com.example.demo.domain.card.dto.CardUserResponseDto;
 import com.example.demo.domain.card.dto.PickedRequestDto;
 import com.example.demo.domain.card.service.CardService;
 import com.example.demo.global.jwt.user.UserDetailsImpl;
@@ -21,13 +23,13 @@ public class CardController {
 
     //카드 조회     //한페이지 내에서 각 유저의 남은 카드 장수를 각각 조회해서 프론트가 확인하는걸까?
     @GetMapping("/check")
-    public ResponseEntity<?> check(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return cardService.check(userDetails.getUser());
+    public CardsResponseDto check(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return cardService.check(userDetails.getUser().getUserId());
     }
 
     //중복 제거(시작시)
     @PostMapping("/start/distinct/{roomId}")
-    public ResponseEntity<?> startDistinct(@PathVariable String roomId) {
+    public CardUserResponseDto startDistinct(@PathVariable String roomId) {
         return cardService.startDistinct(roomId);
     }
 
@@ -35,7 +37,7 @@ public class CardController {
     @PostMapping("/distinct")
     public ResponseEntity<?> distinct(@AuthenticationPrincipal UserDetailsImpl userDetails,
                                PickedRequestDto pickedRequestDto) {
-        return cardService.distinct(pickedRequestDto.getCard(), userDetails.getUser());
+        return cardService.distinct(pickedRequestDto.getCardNum(), userDetails.getUser());
     }
 
     //카드 뽑을때 섞기

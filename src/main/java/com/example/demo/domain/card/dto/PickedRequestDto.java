@@ -7,5 +7,5 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class PickedRequestDto {
-    private Card card;
+    private Integer cardNum;
 }

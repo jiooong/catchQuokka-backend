@@ -1,5 +1,6 @@
 package com.example.demo.domain.user.controller;
 
+import com.example.demo.domain.room.dto.RoomDto;
 import com.example.demo.domain.user.dto.LoginRequestDto;
 import com.example.demo.domain.user.service.UserService;
 import com.example.demo.global.jwt.user.UserDetailsImpl;
@@ -39,5 +40,10 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
         return ResponseEntity.ok(userService.login(loginRequestDto));
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity<?> test(@RequestBody RoomDto roomDto) {
+        return ResponseEntity.ok(userService.test(roomDto));
     }
 }
